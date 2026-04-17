@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fetch Products</title>
+
+    <style>
+    body{
+        font-family: Arial, sans-serif;
+        background:linear-gradient(135deg,#f4f4f4,#e8eefc);
+        margin:0;
+        padding:30px 20px;
+    }
+
+    h1{
+        text-align:center;
+        margin-bottom:30px;
+        color:#222;
+    }
+
+    .search-box{
+        display:block;
+        width:min(420px,100%);
+        padding:12px 16px;
+        border:1px solid #cbd5e1;
+        border-radius:12px;
+        font-size:16px;
+        outline:none;
+        box-shadow:0 6px 16px rgba(0,0,0,0.06);
+    }
+
+    .category-select{
+        padding:12px 16px;
+        border:1px solid #cbd5e1;
+        border-radius:12px;
+        font-size:16px;
+        outline:none;
+        background:white;
+        box-shadow:0 6px 16px rgba(0,0,0,0.06);
+    }
+
+    .controls{
+        width:min(720px,100%);
+        margin:0 auto 24px;
+        display:flex;
+        flex-wrap:wrap;
+        justify-content:center;
+        gap:12px;
+    }
+
+    .sort-btn{
+        background:#0f172a;
+        color:white;
+        border:none;
+        border-radius:12px;
+        padding:12px 18px;
+        font-size:15px;
+        cursor:pointer;
+        box-shadow:0 6px 16px rgba(0,0,0,0.12);
+        transition:transform 0.2s ease, background 0.2s ease;
+    }
+
+    .sort-btn:hover{
+        background:#1e293b;
+        transform:translateY(-2px);
+    }
+
+    .view-more{
+        background:#2563eb;
+        color:white;
+        border:none;
+        border-radius:6px;
+        padding:10px 16px;
+        cursor:pointer;
+        transition:background 0.3s ease;
+    }
+
+    .view-more:hover{
+        background:#1d4ed8;
+    }
+
+    .search-box:focus{
+        border-color:#1f9d55;
+        box-shadow:0 0 0 4px rgba(31,157,85,0.15);
+    }
+
+    .category-select:focus{
+        border-color:#1f9d55;
+        box-shadow:0 0 0 4px rgba(31,157,85,0.15);
+    }
+
+    #products{
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+        gap:24px;
+        margin-top:20px;
+        align-items:stretch;
+    }
+
+    .card{
+        background:white;
+        padding:20px;
+        border-radius:18px;
+        box-shadow:0 10px 25px rgba(0,0,0,0.08);
+        text-align:center;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:space-between;
+        gap:14px;
+        transition:transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover{
+        transform:translateY(-8px) scale(1.02);
+        box-shadow:0 16px 30px rgba(0,0,0,0.15);
+    }
+
+    .card img{
+        width:120px;
+        height:140px;
+        object-fit:contain;
+    }
+
+    .card h3{
+        margin:0;
+        font-size:18px;
+        color:#1f2937;
+    }
+
+    .card p{
+        color:#555;
+        font-size:14px;
+        min-height:44px;
+        margin:0;
+        line-height:1.5;
+    }
+
+    .price{
+        background:#1f9d55;
+        color:white;
+        font-weight:bold;
+        border:none;
+        border-radius:6px;
+        padding:10px 16px;
+        cursor:pointer;
+        transition:background 0.3s ease;
+    }
+
+    .price:hover{
+        background:#167a41;
+    }
+
+    .error{
+        color:red;
+        font-size:20px;
+        font-weight:bold;
+        text-align:center;
+        grid-column:1 / -1;
+    }
+
+    .loading{
+        color:#1f2937;
+        font-size:20px;
+        font-weight:bold;
+        text-align:center;
+        grid-column:1 / -1;
+    }
+
+    .empty{
+        color:#475569;
+        font-size:18px;
+        text-align:center;
+        grid-column:1 / -1;
+    }
+
+    .modal{
+        position:fixed;
+        inset:0;
+        background:rgba(15,23,42,0.6);
+        display:none;
+        align-items:center;
+        justify-content:center;
+        padding:20px;
+    }
+
+    .modal.show{
+        display:flex;
+    }
+
+    .modal-content{
+        position:relative;
+        width:min(700px,100%);
+        background:white;
+        border-radius:20px;
+        padding:28px;
+        box-shadow:0 20px 50px rgba(0,0,0,0.25);
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+        gap:24px;
+    }
+
+    .modal-image{
+        width:100%;
+        max-width:220px;
+        height:240px;
+        object-fit:contain;
+        justify-self:center;
+    }
+
+    .modal-details{
+        display:flex;
+        flex-direction:column;
+        gap:12px;
+    }
+
+    .modal-details h2{
+        margin:0;
+        color:#0f172a;
+    }
+
+    .modal-details p{
+        margin:0;
+        color:#475569;
+        line-height:1.6;
+        min-height:auto;
+    }
+
+    .modal-price{
+        color:#1f9d55;
+        font-size:24px;
+        font-weight:bold;
+    }
+
+    .modal-category{
+        text-transform:capitalize;
+        font-weight:bold;
+        color:#2563eb;
+    }
+
+    .close-modal{
+        position:absolute;
+        top:12px;
+        right:16px;
+        background:none;
+        border:none;
+        font-size:28px;
+        cursor:pointer;
+        color:#475569;
+    }
+</style>
+</head>
+<body>
+    <h1>Fake Store Products</h1>
+    <div class="controls">
+        <input type="text" id="searchInput" class="search-box" placeholder="Search by product title">
+        <select id="categoryFilter" class="category-select">
+            <option value="">All Categories</option>
+            <option value="electronics">electronics</option>
+            <option value="jewelery">jewelery</option>
+            <option value="men's clothing">men's clothing</option>
+            <option value="women's clothing">women's clothing</option>
+        </select>
+        <button id="sortLowToHigh" class="sort-btn">Sort Low to High</button>
+        <button id="sortHighToLow" class="sort-btn">Sort High to Low</button>
+    </div>
+
+<div id="products"></div>
+
+<div id="productModal" class="modal">
+    <div class="modal-content">
+        <button id="closeModal" class="close-modal">&times;</button>
+        <img id="modalImage" class="modal-image" src="" alt="">
+        <div class="modal-details">
+            <span id="modalCategory" class="modal-category"></span>
+            <h2 id="modalTitle"></h2>
+            <p id="modalDescription"></p>
+            <span id="modalPrice" class="modal-price"></span>
+        </div>
+    </div>
+</div>
+    <script src="./task8.js"></script>
+</body>
+</html>
